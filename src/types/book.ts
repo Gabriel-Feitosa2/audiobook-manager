@@ -1,4 +1,3 @@
-
 export interface AudioFile {
   id: string;
   file: File;
@@ -10,7 +9,7 @@ export interface AudioFile {
 export interface Book {
   id: string;
   title: string;
-  cover?: string | null; // URL for the cover image
+  cover?: Blob | MediaSource | null; // URL for the cover image
   coverFile?: File | null; // Adding this to handle file uploads
   audioFiles: AudioFile[];
   currentFileIndex: number;

@@ -512,22 +512,6 @@ const AudioPlayer: React.FC = () => {
   };
 
   const handleCreateBook = async (book: Book) => {
-    // Save cover image if it exists
-    if (book.coverFile) {
-      try {
-        const reader = new FileReader();
-        const coverPromise = new Promise<string>((resolve) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(book.coverFile as File);
-        });
-
-        const coverDataUrl = await coverPromise;
-        book.cover = coverDataUrl;
-      } catch (error) {
-        console.error("Error reading cover file:", error);
-      }
-    }
-
     setBooks((prev) => [...prev, book]);
     setSelectedBookId(book.id);
 

@@ -1,11 +1,10 @@
-
-import React, { useState } from 'react';
-import { Book } from '@/types/book';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Upload, BookAudio, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import { Book } from "@/types/book";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Upload, BookAudio, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface BookFormProps {
   initialBook?: Partial<Book>;
@@ -13,50 +12,56 @@ interface BookFormProps {
   onCancel: () => void;
 }
 
-const BookForm: React.FC<BookFormProps> = ({ initialBook, onSave, onCancel }) => {
-  const [title, setTitle] = useState(initialBook?.title || '');
-  const [coverPreview, setCoverPreview] = useState<string | null>(initialBook?.cover || null);
+const BookForm: React.FC<BookFormProps> = ({
+  initialBook,
+  onSave,
+  onCancel,
+}) => {
+  const [title, setTitle] = useState(initialBook?.title || "");
+  const [coverPreview, setCoverPreview] = useState<string | null>(
+    initialBook?.cover || null
+  );
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const { toast } = useToast();
-  
+
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
+
     const file = files[0];
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       toast({
         title: "Invalid file",
         description: "Please upload an image file for the cover",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     setCoverFile(file);
     const previewUrl = URL.createObjectURL(file);
     setCoverPreview(previewUrl);
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) {
       toast({
         title: "Title required",
         description: "Please enter a title for your audiobook",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     onSave({
       title,
-      cover: coverPreview,
-      coverFile: coverFile
+      cover: coverFile,
+      coverFile: coverFile,
     });
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -68,16 +73,16 @@ const BookForm: React.FC<BookFormProps> = ({ initialBook, onSave, onCancel }) =>
           placeholder="Enter audiobook title"
         />
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="cover">Cover Image</Label>
         <div className="flex items-center space-x-4">
           <div className="w-24 h-24 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50">
             {coverPreview ? (
               <div className="relative w-full h-full">
-                <img 
-                  src={coverPreview} 
-                  alt="Book cover" 
+                <img
+                  src={coverPreview}
+                  alt="Book cover"
                   className="w-full h-full object-cover"
                 />
                 <button
@@ -96,7 +101,7 @@ const BookForm: React.FC<BookFormProps> = ({ initialBook, onSave, onCancel }) =>
               <BookAudio className="h-8 w-8 text-gray-400" />
             )}
           </div>
-          
+
           <div>
             <Input
               id="cover"
@@ -108,7 +113,7 @@ const BookForm: React.FC<BookFormProps> = ({ initialBook, onSave, onCancel }) =>
             <Button
               type="button"
               variant="outline"
-              onClick={() => document.getElementById('cover')?.click()}
+              onClick={() => document.getElementById("cover")?.click()}
             >
               <Upload className="h-4 w-4 mr-2" />
               Upload Cover
@@ -116,12 +121,15 @@ const BookForm: React.FC<BookFormProps> = ({ initialBook, onSave, onCancel }) =>
           </div>
         </div>
       </div>
-      
+
       <div className="flex justify-end space-x-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" className="bg-audiobook-purple hover:bg-audiobook-darkPurple">
+        <Button
+          type="submit"
+          className="bg-audiobook-purple hover:bg-audiobook-darkPurple"
+        >
           Save Book
         </Button>
       </div>

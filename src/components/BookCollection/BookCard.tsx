@@ -1,9 +1,8 @@
-
-import React from 'react';
-import { Book } from '@/types/book';
-import { BookAudio, Disc3 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Book } from "@/types/book";
+import { BookAudio, Disc3 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface BookCardProps {
   book: Book;
@@ -13,7 +12,7 @@ interface BookCardProps {
 
 const BookCard: React.FC<BookCardProps> = ({ book, isSelected, onClick }) => {
   return (
-    <Card 
+    <Card
       className={cn(
         "cursor-pointer transition-all hover:shadow-lg overflow-hidden",
         isSelected ? "ring-2 ring-audiobook-purple" : ""
@@ -22,9 +21,11 @@ const BookCard: React.FC<BookCardProps> = ({ book, isSelected, onClick }) => {
     >
       <div className="aspect-square relative">
         {book.cover ? (
-          <div 
-            className="w-full h-full bg-cover bg-center" 
-            style={{ backgroundImage: `url(${book.cover})` }}
+          <div
+            className="w-full h-full bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${URL.createObjectURL(book.cover)})`,
+            }}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-audiobook-purple to-audiobook-teal/40 flex items-center justify-center">
@@ -36,7 +37,8 @@ const BookCard: React.FC<BookCardProps> = ({ book, isSelected, onClick }) => {
         <h3 className="font-medium text-sm line-clamp-1">{book.title}</h3>
         <div className="flex items-center mt-1 text-xs text-audiobook-grayText">
           <Disc3 className="h-3 w-3 mr-1" />
-          {book.audioFiles.length} {book.audioFiles.length === 1 ? 'file' : 'files'}
+          {book.audioFiles.length}{" "}
+          {book.audioFiles.length === 1 ? "file" : "files"}
         </div>
       </CardContent>
     </Card>
