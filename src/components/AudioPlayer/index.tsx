@@ -120,11 +120,7 @@ const AudioPlayer: React.FC = () => {
 
   // Save current playback time periodically (every 5 seconds)
   useEffect(() => {
-    const saveTimer = setInterval(() => {
-      saveCurrentPlaybackTime();
-    }, 5000);
-
-    return () => clearInterval(saveTimer);
+    saveCurrentPlaybackTime();
   }, [currentTime, selectedBookId, currentFileIndex]);
 
   // Save settings whenever they change
@@ -495,6 +491,10 @@ const AudioPlayer: React.FC = () => {
       }
     }
   };
+
+  useEffect(() => {
+    loadAudio(currentFileIndex, selectedBookId || undefined);
+  }, [isLoading]);
 
   const handleBookSelect = async (book: Book) => {
     setSelectedBookId(book.id);
