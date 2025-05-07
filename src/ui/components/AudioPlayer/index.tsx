@@ -17,6 +17,13 @@ import PlaylistItem from "./PlaylistItem";
 import BookCollection from "../BookCollection";
 import { Book, AudioFile } from "@/ui/types/book";
 import { databaseService } from "@/ui/services/database";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 declare global {
   interface Window {
@@ -66,10 +73,18 @@ const AudioPlayer: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("library");
   const [isLoading, setIsLoading] = useState(true);
   const [lastSavedTime, setLastSavedTime] = useState(0);
+  const [selectFileId, setSelectFileId] = useState<string | null>(null);
+
+  const currentBook = selectedBookId
+    ? books.find((book) => book.id === selectedBookId)
+    : null;
+  const currentBookFiles = currentBook ? currentBook.audioFiles : audioFiles;
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioUrlRef = useRef<string | null>(null);
   const { toast } = useToast();
+
+  console.log(selectFileId);
 
   // Load data from IndexedDB when component mounts
   useEffect(() => {
@@ -160,6 +175,12 @@ const AudioPlayer: React.FC = () => {
     };
   }, [toast]);
 
+  useEffect(() => {
+    // load selectFileId
+
+    setSelectFileId(currentBookFiles[currentFileIndex]?.id || null);
+  }, [currentFileIndex, currentBookFiles]);
+
   const saveCurrentSettings = async () => {
     await window.electronAPI.saveSettings({
       selectedBookId: selectedBookId,
@@ -233,10 +254,6 @@ const AudioPlayer: React.FC = () => {
   };
 
   // Get current book and its files
-  const currentBook = selectedBookId
-    ? books.find((book) => book.id === selectedBookId)
-    : null;
-  const currentBookFiles = currentBook ? currentBook.audioFiles : audioFiles;
 
   const handleFileUpload = async (
     files: { path: string; name: string }[],
@@ -549,6 +566,12 @@ const AudioPlayer: React.FC = () => {
     }
   };
 
+  const changeTrack = (id: string) => {
+    const nextIndex = currentBookFiles.findIndex((file) => file.id === id);
+    setSelectFileId(id);
+    loadAudio(nextIndex, selectedBookId || undefined);
+  };
+
   useEffect(() => {
     loadAudio(currentFileIndex, selectedBookId || undefined);
   }, [isLoading]);
@@ -610,6 +633,8 @@ const AudioPlayer: React.FC = () => {
       : audioFiles;
   const hasNextTrack = currentFileIndex < currentFiles.length - 1;
   const hasPrevTrack = currentFileIndex > 0;
+
+  console.log(currentBookFiles);
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
@@ -741,10 +766,28 @@ const AudioPlayer: React.FC = () => {
                           {getCurrentFileName()}
                         </h3>
 
-                        <p className="text-audiobook-grayText text-sm mb-6">
-                          Track {currentFileIndex + 1} of{" "}
-                          {currentBookFiles.length}
-                        </p>
+                        <div className="flex items-baseline mb-4 gap-4">
+                          <p className="text-audiobook-grayText text-sm mb-6">
+                            Track {currentFileIndex + 1} of{" "}
+                            {currentBookFiles.length}
+                          </p>
+
+                          <Select
+                            value={selectFileId || "no-selection"}
+                            onValueChange={(value) => changeTrack(value)}
+                          >
+                            <SelectTrigger className="w-60 h-8">
+                              <SelectValue placeholder="Select a track" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {currentBookFiles.map((file) => (
+                                <SelectItem key={file.id} value={file.id}>
+                                  {file.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
 
                         <AudioControls
                           audioRef={audioRef}
