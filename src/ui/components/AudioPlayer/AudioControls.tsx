@@ -12,20 +12,21 @@ import {
 } from "lucide-react";
 import { Slider } from "@/ui/components/ui/slider";
 import { Button } from "@/ui/components/ui/button";
+import { useAtomValue } from "jotai";
+import { durationAtom } from "@/ui/atom/books";
 
 interface AudioControlsProps {
   audioRef: React.RefObject<HTMLAudioElement>;
   isPlaying: boolean;
   togglePlay: () => void;
   audioProgress: number;
-  duration: number;
   currentTime: number;
   setAudioProgress: React.Dispatch<React.SetStateAction<number>>;
   skip: (seconds: number) => void;
   volume: number;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
-  prevTrack: () => void;
   nextTrack: () => void;
+  prevTrack: () => void;
   hasNextTrack: boolean;
   hasPrevTrack: boolean;
 }
@@ -35,17 +36,18 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   isPlaying,
   togglePlay,
   audioProgress,
-  duration,
   currentTime,
   setAudioProgress,
   skip,
   volume,
   setVolume,
-  prevTrack,
   nextTrack,
+  prevTrack,
   hasNextTrack,
   hasPrevTrack,
 }) => {
+  const duration = useAtomValue(durationAtom);
+
   // Format time in MM:SS
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds)) return "00:00";

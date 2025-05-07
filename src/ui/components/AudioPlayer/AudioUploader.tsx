@@ -10,26 +10,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/ui/components/ui/select";
+import { useAudiobooks } from "@/ui/hooks/usebook";
 
 interface AudioUploaderProps {
-  onFileUpload: (
-    files: { path: string; name: string }[],
-    bookId?: string
-  ) => void;
   books: Book[];
   selectedBookId: string | null;
-  onSelectBook: (bookId: string) => void;
 }
 
 const AudioUploader: React.FC<AudioUploaderProps> = ({
-  onFileUpload,
   books,
   selectedBookId,
-  onSelectBook,
 }) => {
+  const { onSelectBook } = useAudiobooks();
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const { handleFileUpload } = useAudiobooks();
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -39,23 +36,6 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
   const handleDragLeave = () => {
     setIsDragging(false);
   };
-
-  // const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-  //   e.preventDefault();
-  //   setIsDragging(false);
-
-  //   const files = Array.from(e.dataTransfer.files);
-  //   if (files.length > 0) {
-  //     processFiles(files);
-  //   }
-  // };
-
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const files = e.target.files;
-  //   if (files && files.length > 0) {
-  //     processFiles(Array.from(files));
-  //   }
-  // };
 
   const processFiles = (files: { path: string; name: string }[]) => {
     // const audioFiles = files.filter((file) => file.type.startsWith("audio/"));
@@ -69,17 +49,7 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
       return;
     }
 
-    // if (audioFiles.length < files.length) {
-    //   toast({
-    //     title: "Some files ignored",
-    //     description: `${
-    //       files.length - audioFiles.length
-    //     } non-audio files were ignored`,
-    //     variant: "default",
-    //   });
-    // }
-
-    onFileUpload(files, selectedBookId || undefined);
+    handleFileUpload(files, selectedBookId || undefined);
     toast({
       title: "Files uploaded",
       description: `${files.length} audio ${
@@ -92,10 +62,6 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
   };
 
   const uploadAudios = async () => {
@@ -152,21 +118,12 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
             </p>
           </div>
           <Button
-            // onClick={triggerFileInput}
             onClick={() => uploadAudios()}
             className="bg-audiobook-purple hover:bg-audiobook-darkPurple"
           >
             <Upload className="h-4 w-4 mr-2" />
             Choose Files
           </Button>
-          {/* <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="audio/*"
-            multiple
-            className="hidden"
-          /> */}
         </div>
       </div>
     </div>

@@ -12,26 +12,24 @@ import BookCard from "./BookCard";
 import BookForm from "./BookForm";
 import { useToast } from "@/ui/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { useAudiobooks } from "@/ui/hooks/usebook";
 
 interface BookCollectionProps {
   books: Book[];
   onBookSelect: (book: Book) => void;
-  onCreateBook: (book: Book) => void;
-  onDeleteBook: (bookId: string) => void;
   selectedBookId: string | null;
 }
 
 const BookCollection: React.FC<BookCollectionProps> = ({
   books,
   onBookSelect,
-  onCreateBook,
-  onDeleteBook,
   selectedBookId,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { handleCreateBook, handleDeleteBook } = useAudiobooks();
   const { toast } = useToast();
 
-  const handleCreateBook = (bookData: Partial<Book>) => {
+  const CreateBook = (bookData: Partial<Book>) => {
     const newBook: Book = {
       id: uuidv4(),
       title: bookData.title || "Untitled Audiobook",
@@ -40,7 +38,7 @@ const BookCollection: React.FC<BookCollectionProps> = ({
       currentFileIndex: 0,
     };
 
-    onCreateBook(newBook);
+    handleCreateBook(newBook);
     setIsDialogOpen(false);
 
     toast({
@@ -86,7 +84,7 @@ const BookCollection: React.FC<BookCollectionProps> = ({
               book={book}
               isSelected={book.id === selectedBookId}
               onClick={() => onBookSelect(book)}
-              onDelete={() => onDeleteBook(book.id)}
+              onDelete={() => handleDeleteBook(book.id)}
             />
           ))}
         </div>
@@ -98,7 +96,7 @@ const BookCollection: React.FC<BookCollectionProps> = ({
             <DialogTitle>Create New Audiobook</DialogTitle>
           </DialogHeader>
           <BookForm
-            onSave={handleCreateBook}
+            onSave={CreateBook}
             onCancel={() => setIsDialogOpen(false)}
           />
         </DialogContent>

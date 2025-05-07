@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/ui/components/ui/card";
 import {
   Tabs,
@@ -8,14 +8,13 @@ import {
 } from "@/ui/components/ui/tabs";
 import { BookAudio, List } from "lucide-react";
 import { useToast } from "@/ui/hooks/use-toast";
-import { v4 as uuidv4 } from "uuid";
 
 import AudioUploader from "./AudioUploader";
 import AudioControls from "./AudioControls";
 import BookCover from "./BookCover";
 import PlaylistItem from "./PlaylistItem";
 import BookCollection from "../BookCollection";
-import { Book, AudioFile } from "@/ui/types/book";
+import { Book } from "@/ui/types/book";
 import { databaseService } from "@/ui/services/database";
 import {
   Select,
@@ -24,32 +23,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useAtom } from "jotai";
+import {
+  audioFilesAtom,
+  audioProgressAtom,
+  booksAtom,
+  currentFileIndexAtom,
+  currentTimeAtom,
+  isPlayingAtom,
+  selectedBookIdAtom,
+  selectFileIdAtom,
+} from "@/ui/atom/books";
+import { useAudiobooks } from "@/ui/hooks/usebook";
+import { activeTabAtom } from "@/ui/atom/ui";
+import Player from "./Player";
 
 const AudioPlayer: React.FC = () => {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
-  const [currentFileIndex, setCurrentFileIndex] = useState<number>(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioProgress, setAudioProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [books, setBooks] = useAtom(booksAtom);
+  const [selectedBookId, setSelectedBookId] = useAtom(selectedBookIdAtom);
+  const [audioFiles, setAudioFiles] = useAtom(audioFilesAtom);
+  const [currentFileIndex, setCurrentFileIndex] = useAtom(currentFileIndexAtom);
+  const [isPlaying, setIsPlaying] = useAtom(isPlayingAtom);
+  const [audioProgress, setAudioProgress] = useAtom(audioProgressAtom);
+  const [currentTime, setCurrentTime] = useAtom(currentTimeAtom);
   const [volume, setVolume] = useState(1);
-  const [activeTab, setActiveTab] = useState<string>("library");
+  const [activeTab, setActiveTab] = useAtom(activeTabAtom);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastSavedTime, setLastSavedTime] = useState(0);
-  const [selectFileId, setSelectFileId] = useState<string | null>(null);
+  const [selectFileId, setSelectFileId] = useAtom(selectFileIdAtom);
+
+  const {
+    loadAudio,
+    saveCurrentTime,
+    changeTrack,
+    togglePlay,
+    prevTrack,
+    nextTrack,
+    handleEnded,
+    skip,
+    audioRef,
+    audioUrlRef,
+  } = useAudiobooks();
 
   const currentBook = selectedBookId
     ? books.find((book) => book.id === selectedBookId)
     : null;
   const currentBookFiles = currentBook ? currentBook.audioFiles : audioFiles;
 
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const audioUrlRef = useRef<string | null>(null);
   const { toast } = useToast();
 
-  // Load data from IndexedDB when component mounts
+  // Load data from DB when component mounts
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -134,7 +156,7 @@ const AudioPlayer: React.FC = () => {
       }
 
       // Save current playback time when component unmounts
-      saveCurrentPlaybackTime();
+      saveCurrentTime();
     };
   }, [toast]);
 
@@ -160,332 +182,12 @@ const AudioPlayer: React.FC = () => {
     }
   }, [selectedBookId, currentFileIndex, isLoading, currentTime]);
 
-  // Save the current playback time to the appropriate storage
-  const saveCurrentPlaybackTime = async () => {
-    if (currentTime !== lastSavedTime) {
-      // Only save if the time has changed since last save
-      setLastSavedTime(currentTime);
-
-      if (selectedBookId && currentFileIndex >= 0) {
-        const book = books.find((b) => b.id === selectedBookId);
-        if (book && book.audioFiles[currentFileIndex]) {
-          const audioFile = book.audioFiles[currentFileIndex];
-
-          // Update our local state
-          const updatedBooks = books.map((b) => {
-            if (b.id === selectedBookId) {
-              const updatedAudioFiles = b.audioFiles.map((af, idx) =>
-                idx === currentFileIndex ? { ...af, currentTime } : af
-              );
-              return { ...b, audioFiles: updatedAudioFiles };
-            }
-            return b;
-          });
-          setBooks(updatedBooks);
-
-          // Update in the database
-          await databaseService.updateAudioFileTime(
-            selectedBookId,
-            audioFile.id,
-            currentTime
-          );
-        }
-      } else if (
-        currentFileIndex >= 0 &&
-        currentFileIndex < audioFiles.length
-      ) {
-        // Update loose audio file time
-        const updatedAudioFiles = audioFiles.map((af, idx) =>
-          idx === currentFileIndex ? { ...af, currentTime } : af
-        );
-        setAudioFiles(updatedAudioFiles);
-
-        // Update in the database
-        await databaseService.updateLooseAudioTime(
-          audioFiles[currentFileIndex].id,
-          currentTime
-        );
-      }
-
-      // Also update in general settings
-      await window.electronAPI.saveSettings({
-        selectedBookId: selectedBookId,
-        currentFileIndex,
-        currentPlaybackTime: currentTime,
-      });
-    }
-  };
-
-  // Get current book and its files
-
-  const handleFileUpload = async (
-    files: { path: string; name: string }[],
-    bookId?: string
-  ) => {
-    const newAudioFiles = files.map((file) => ({
-      id: uuidv4(),
-      path: file.path,
-      name: file.name,
-    }));
-
-    if (bookId && bookId !== "no-selection") {
-      // Add to book
-      setBooks((prev) => {
-        const updatedBooks = prev.map((book) => {
-          if (book.id === bookId) {
-            // Check if files already exist in this book
-
-            const filteredNewFiles = newAudioFiles.filter((newFile) => {
-              return !book.audioFiles.some(
-                (existingFile) =>
-                  existingFile?.name === newFile?.name &&
-                  existingFile?.path === newFile?.path
-              );
-            });
-
-            if (filteredNewFiles.length < newAudioFiles.length) {
-              toast({
-                title: "Some files already exist",
-                description: `${
-                  newAudioFiles.length - filteredNewFiles.length
-                } files were already in this book`,
-                variant: "default",
-              });
-            }
-
-            if (filteredNewFiles.length === 0) return book;
-
-            const updatedBook = {
-              ...book,
-              audioFiles: [...book.audioFiles, ...filteredNewFiles],
-            };
-
-            // Save book to IndexedDB
-
-            window.electronAPI.saveBook(updatedBook, filteredNewFiles);
-
-            return updatedBook;
-          }
-          return book;
-        });
-
-        return updatedBooks;
-      });
-
-      setSelectedBookId(bookId);
-
-      // If this is the first file in the book, or no file is currently playing, load it
-      const book = books.find((b) => b.id === bookId);
-      if (book && book.audioFiles.length === 0 && currentFileIndex === -1) {
-        setActiveTab("player");
-        loadAudio(0, bookId);
-      }
-    } else {
-      // Add to loose files
-      const updatedAudioFiles = [...audioFiles];
-
-      // Filter out already existing files
-      const filteredNewFiles = newAudioFiles.filter((newFile) => {
-        return !audioFiles.some(
-          (existingFile) =>
-            existingFile.name === newFile.name &&
-            existingFile.path === newFile.path
-        );
-      });
-
-      if (filteredNewFiles.length < newAudioFiles.length) {
-        toast({
-          title: "Some files already exist",
-          description: `${
-            newAudioFiles.length - filteredNewFiles.length
-          } files were already in your playlist`,
-          variant: "default",
-        });
-      }
-
-      if (filteredNewFiles.length > 0) {
-        // Save to IndexedDB
-        for (const file of filteredNewFiles) {
-          await databaseService.saveLooseAudio(file);
-        }
-
-        const combinedFiles = [...updatedAudioFiles, ...filteredNewFiles];
-        setAudioFiles(combinedFiles);
-
-        // If this is the first file, select it automatically
-        if (audioFiles.length === 0 && !selectedBookId) {
-          setActiveTab("player");
-          loadAudio(0);
-        }
-      }
-    }
-  };
-
-  const loadAudio = async (index: number, bookId?: string) => {
-    // Clean up previous object URL if any
-    if (audioUrlRef.current) {
-      URL.revokeObjectURL(audioUrlRef.current);
-    }
-
-    const files =
-      bookId && bookId !== "no-selection"
-        ? books.find((b) => b.id === bookId)?.audioFiles || []
-        : audioFiles;
-
-    const audioFile = files[index];
-    if (!audioFile) return;
-
-    let file = audioFile.path;
-
-    // If we're selecting a book track, we need to load the actual file data
-    if (bookId && bookId !== "no-selection") {
-      const actualFile = await window.electronAPI.getAudioFilePath(
-        audioFile.id
-      );
-
-      if (actualFile) {
-        file = actualFile.filePath;
-        // Update our in-memory representation
-        setBooks((prev) =>
-          prev.map((book) => {
-            if (book.id === bookId) {
-              const updatedAudioFiles = [...book.audioFiles];
-              updatedAudioFiles[index] = {
-                ...updatedAudioFiles[index],
-              };
-              return {
-                ...book,
-                audioFiles: updatedAudioFiles,
-              };
-            }
-            return book;
-          })
-        );
-      }
-    }
-
-    const audioUrl = `file://${file}`;
-    audioUrlRef.current = audioUrl;
-
-    if (audioRef.current) {
-      audioRef.current.src = audioUrl;
-      audioRef.current.load();
-
-      // Set up audio event listeners
-      audioRef.current.onloadedmetadata = () => {
-        if (audioRef.current) {
-          setDuration(audioRef.current.duration);
-
-          // Set the current time to the saved position if it exists
-          const savedTime = audioFile.currentTime || 0;
-          if (savedTime > 0) {
-            audioRef.current.currentTime = savedTime;
-            setCurrentTime(savedTime);
-            setAudioProgress((savedTime / audioRef.current.duration) * 100);
-          } else {
-            setCurrentTime(0);
-            setAudioProgress(0);
-          }
-        }
-      };
-    }
-
-    setCurrentFileIndex(index);
-
-    // Update current file index in book if needed
-    if (bookId && bookId !== "no-selection") {
-      setBooks((prev) =>
-        prev.map((book) => {
-          if (book.id === bookId) {
-            const updatedBook = { ...book, currentFileIndex: index };
-            databaseService.saveBook(updatedBook);
-            return updatedBook;
-          }
-          return book;
-        })
-      );
-    }
-
-    setIsPlaying(false);
-  };
-
-  const saveCurrentTime = async () => {
-    const selectBook = books.find((b) => b.id === selectedBookId);
-
-    const audioFile = selectBook.audioFiles[currentFileIndex];
-
-    await window.electronAPI.updateAudioCurrentTime(
-      audioFile.id,
-      currentTime,
-      false
-    );
-  };
-
-  const togglePlay = async () => {
-    saveCurrentTime();
-    if (selectedBookId) {
-      const book = books.find((b) => b.id === selectedBookId);
-      if (!book) return;
-
-      if (currentFileIndex === -1 && book.audioFiles.length > 0) {
-        loadAudio(0, selectedBookId);
-        setIsPlaying(true);
-        audioRef.current?.play();
-        return;
-      }
-    } else if (currentFileIndex === -1 && audioFiles.length > 0) {
-      loadAudio(0);
-      setIsPlaying(true);
-      audioRef.current?.play();
-      return;
-    }
-
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       const progress =
         (audioRef.current.currentTime / audioRef.current.duration) * 100;
       setAudioProgress(progress);
       setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  const handleEnded = () => {
-    const currentFiles = selectedBookId
-      ? books.find((b) => b.id === selectedBookId)?.audioFiles || []
-      : audioFiles;
-
-    if (currentFileIndex < currentFiles.length - 1) {
-      // Play next track
-      loadAudio(currentFileIndex + 1, selectedBookId || undefined);
-      setIsPlaying(true);
-      audioRef.current?.play();
-    } else {
-      // End of playlist
-      setIsPlaying(false);
-      setAudioProgress(0);
-      setCurrentTime(0);
-      toast({
-        title: "Playback ended",
-        description: "You've reached the end of the audiobook",
-      });
-    }
-  };
-
-  const skip = (seconds: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime += seconds;
-      saveCurrentPlaybackTime(); // Save position after skipping
-      saveCurrentTime();
     }
   };
 
@@ -500,39 +202,6 @@ const AudioPlayer: React.FC = () => {
     if (audioRef.current) {
       audioRef.current.play();
     }
-  };
-
-  const prevTrack = () => {
-    saveCurrentTime();
-    if (currentFileIndex > 0) {
-      loadAudio(currentFileIndex - 1, selectedBookId || undefined);
-      setIsPlaying(true);
-      if (audioRef.current) {
-        audioRef.current.play();
-      }
-    }
-  };
-
-  const nextTrack = () => {
-    saveCurrentTime();
-    const currentFiles =
-      selectedBookId && selectedBookId !== "no-selection"
-        ? books.find((b) => b.id === selectedBookId)?.audioFiles || []
-        : audioFiles;
-
-    if (currentFileIndex < currentFiles.length - 1) {
-      loadAudio(currentFileIndex + 1, selectedBookId || undefined);
-      setIsPlaying(true);
-      if (audioRef.current) {
-        audioRef.current.play();
-      }
-    }
-  };
-
-  const changeTrack = (id: string) => {
-    const nextIndex = currentBookFiles.findIndex((file) => file.id === id);
-    setSelectFileId(id);
-    loadAudio(nextIndex, selectedBookId || undefined);
   };
 
   useEffect(() => {
@@ -551,30 +220,6 @@ const AudioPlayer: React.FC = () => {
           ? book.currentFileIndex
           : 0;
       loadAudio(indexToLoad, book.id);
-    }
-  };
-
-  const handleCreateBook = async (book: Book) => {
-    setBooks((prev) => [...prev, book]);
-    setSelectedBookId(book.id);
-
-    await window.electronAPI.saveBook(book);
-
-    // Save to IndexedDB
-    await databaseService.saveBook(book);
-  };
-
-  const handleDeleteBook = async (bookId: string) => {
-    setBooks((prev) => prev.filter((book) => book.id !== bookId));
-
-    await window.electronAPI.deleteBook(bookId);
-  };
-
-  const onSelectBook = (bookId: string) => {
-    if (bookId === "no-selection") {
-      setSelectedBookId(null);
-    } else {
-      setSelectedBookId(bookId);
     }
   };
 
@@ -654,18 +299,14 @@ const AudioPlayer: React.FC = () => {
                   <BookCollection
                     books={books}
                     onBookSelect={handleBookSelect}
-                    onCreateBook={handleCreateBook}
                     selectedBookId={selectedBookId}
-                    onDeleteBook={handleDeleteBook}
                   />
                 </TabsContent>
 
                 <TabsContent value="upload" className="mt-0">
                   <AudioUploader
-                    onFileUpload={handleFileUpload}
                     books={books}
                     selectedBookId={selectedBookId}
-                    onSelectBook={onSelectBook}
                   />
 
                   {(audioFiles.length > 0 ||
@@ -762,7 +403,6 @@ const AudioPlayer: React.FC = () => {
                           isPlaying={isPlaying}
                           togglePlay={togglePlay}
                           audioProgress={audioProgress}
-                          duration={duration}
                           currentTime={currentTime}
                           setAudioProgress={setAudioProgress}
                           skip={skip}
