@@ -3,14 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "main": "src/electron/main",
+  "main": "src/electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron":  "electron ."
+    "electron": "electron ."
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -59,6 +59,8 @@
     "react-router-dom": "^6.26.2",
     "recharts": "^2.12.7",
     "sonner": "^1.5.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",

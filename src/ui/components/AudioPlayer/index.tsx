@@ -18,6 +18,41 @@ import BookCollection from "../BookCollection";
 import { Book, AudioFile } from "@/ui/types/book";
 import { databaseService } from "@/ui/services/database";
 
+declare global {
+  interface Window {
+    electronAPI: {
+      selectFile: () => Promise<{ path: string; content: string } | null>;
+      selectAudio: () => Promise<{ path: string; name: string }[] | null>;
+      getAllBooks: () => Promise<Book[]>;
+      saveBook: (
+        book: Book,
+        filePaths?: { path: string; name: string }[]
+      ) => Promise<void>;
+      getAudioFilePath: (
+        id: string
+      ) => Promise<{ filePath: string; name: string } | null>;
+      getAllLooseAudios: () => Promise<AudioFile[]>;
+
+      updateAudioCurrentTime: (
+        id: string,
+        currentTime: number,
+        isLoose: boolean
+      ) => Promise<void>;
+
+      getSettings: () => Promise<{
+        selectedBookId: string | null;
+        currentFileIndex: number;
+        currentPlaybackTime: number;
+      } | null>;
+      saveSettings: (settings: {
+        selectedBookId: string;
+        currentFileIndex: number;
+        currentPlaybackTime: number;
+      }) => Promise<void>;
+    };
+  }
+}
+
 const AudioPlayer: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -43,15 +78,19 @@ const AudioPlayer: React.FC = () => {
         setIsLoading(true);
 
         // Load books
-        const savedBooks = await databaseService.getAllBooks();
+
+        const savedBooks = await window.electronAPI.getAllBooks();
         setBooks(savedBooks);
 
         // Load loose audio files
-        const savedAudioFiles = await databaseService.getAllLooseAudios();
+
+        const savedAudioFiles = await window.electronAPI.getAllLooseAudios();
         setAudioFiles(savedAudioFiles);
 
         // Load settings
-        const settings = await databaseService.getSettings();
+
+        const settings = await window.electronAPI.getSettings();
+
         if (settings) {
           setSelectedBookId(settings.selectedBookId);
           setCurrentFileIndex(settings.currentFileIndex);
@@ -70,8 +109,6 @@ const AudioPlayer: React.FC = () => {
               const audioId = book.audioFiles[settings.currentFileIndex].id;
               const file = await databaseService.getAudioFile(audioId);
               if (file) {
-                book.audioFiles[settings.currentFileIndex].file = file;
-
                 // Set the initial current time if it exists
                 const initialTime =
                   book.audioFiles[settings.currentFileIndex].currentTime ||
@@ -123,25 +160,21 @@ const AudioPlayer: React.FC = () => {
     };
   }, [toast]);
 
-  // Save current playback time periodically (every 5 seconds)
-  useEffect(() => {
-    saveCurrentPlaybackTime();
-  }, [currentTime, selectedBookId, currentFileIndex]);
+  const saveCurrentSettings = async () => {
+    await window.electronAPI.saveSettings({
+      selectedBookId: selectedBookId,
+      currentFileIndex,
+      currentPlaybackTime: currentTime,
+    });
+  };
 
   // Save settings whenever they change
-  useEffect(() => {
-    const saveCurrentSettings = async () => {
-      await databaseService.saveSettings(
-        selectedBookId,
-        currentFileIndex,
-        currentTime
-      );
-    };
 
+  useEffect(() => {
     if (!isLoading) {
       saveCurrentSettings();
     }
-  }, [selectedBookId, currentFileIndex, isLoading]);
+  }, [selectedBookId, currentFileIndex, isLoading, currentTime]);
 
   // Save the current playback time to the appropriate storage
   const saveCurrentPlaybackTime = async () => {
@@ -191,11 +224,11 @@ const AudioPlayer: React.FC = () => {
       }
 
       // Also update in general settings
-      await databaseService.saveSettings(
-        selectedBookId,
+      await window.electronAPI.saveSettings({
+        selectedBookId: selectedBookId,
         currentFileIndex,
-        currentTime
-      );
+        currentPlaybackTime: currentTime,
+      });
     }
   };
 
@@ -205,12 +238,14 @@ const AudioPlayer: React.FC = () => {
     : null;
   const currentBookFiles = currentBook ? currentBook.audioFiles : audioFiles;
 
-  const handleFileUpload = async (files: File[], bookId?: string) => {
+  const handleFileUpload = async (
+    files: { path: string; name: string }[],
+    bookId?: string
+  ) => {
     const newAudioFiles = files.map((file) => ({
       id: uuidv4(),
-      file,
+      path: file.path,
       name: file.name,
-      size: file.size,
     }));
 
     if (bookId && bookId !== "no-selection") {
@@ -219,11 +254,12 @@ const AudioPlayer: React.FC = () => {
         const updatedBooks = prev.map((book) => {
           if (book.id === bookId) {
             // Check if files already exist in this book
+
             const filteredNewFiles = newAudioFiles.filter((newFile) => {
               return !book.audioFiles.some(
                 (existingFile) =>
-                  existingFile.name === newFile.name &&
-                  existingFile.size === newFile.size
+                  existingFile?.name === newFile?.name &&
+                  existingFile?.path === newFile?.path
               );
             });
 
@@ -245,10 +281,8 @@ const AudioPlayer: React.FC = () => {
             };
 
             // Save book to IndexedDB
-            databaseService.saveBook(
-              updatedBook,
-              filteredNewFiles.map((f) => ({ id: f.id, file: f.file }))
-            );
+
+            window.electronAPI.saveBook(updatedBook, filteredNewFiles);
 
             return updatedBook;
           }
@@ -275,7 +309,7 @@ const AudioPlayer: React.FC = () => {
         return !audioFiles.some(
           (existingFile) =>
             existingFile.name === newFile.name &&
-            existingFile.size === newFile.size
+            existingFile.path === newFile.path
         );
       });
 
@@ -321,13 +355,16 @@ const AudioPlayer: React.FC = () => {
     const audioFile = files[index];
     if (!audioFile) return;
 
-    let file = audioFile.file;
+    let file = audioFile.path;
 
     // If we're selecting a book track, we need to load the actual file data
     if (bookId && bookId !== "no-selection") {
-      const actualFile = await databaseService.getAudioFile(audioFile.id);
+      const actualFile = await window.electronAPI.getAudioFilePath(
+        audioFile.id
+      );
+
       if (actualFile) {
-        file = actualFile;
+        file = actualFile.filePath;
         // Update our in-memory representation
         setBooks((prev) =>
           prev.map((book) => {
@@ -335,7 +372,6 @@ const AudioPlayer: React.FC = () => {
               const updatedAudioFiles = [...book.audioFiles];
               updatedAudioFiles[index] = {
                 ...updatedAudioFiles[index],
-                file: actualFile,
               };
               return {
                 ...book,
@@ -348,7 +384,7 @@ const AudioPlayer: React.FC = () => {
       }
     }
 
-    const audioUrl = URL.createObjectURL(file);
+    const audioUrl = `file://${file}`;
     audioUrlRef.current = audioUrl;
 
     if (audioRef.current) {
@@ -393,7 +429,20 @@ const AudioPlayer: React.FC = () => {
     setIsPlaying(false);
   };
 
-  const togglePlay = () => {
+  const saveCurrentTime = async () => {
+    const selectBook = books.find((b) => b.id === selectedBookId);
+
+    const audioFile = selectBook.audioFiles[currentFileIndex];
+
+    await window.electronAPI.updateAudioCurrentTime(
+      audioFile.id,
+      currentTime,
+      false
+    );
+  };
+
+  const togglePlay = async () => {
+    saveCurrentTime();
     if (selectedBookId) {
       const book = books.find((b) => b.id === selectedBookId);
       if (!book) return;
@@ -456,6 +505,7 @@ const AudioPlayer: React.FC = () => {
     if (audioRef.current) {
       audioRef.current.currentTime += seconds;
       saveCurrentPlaybackTime(); // Save position after skipping
+      saveCurrentTime();
     }
   };
 
@@ -473,6 +523,7 @@ const AudioPlayer: React.FC = () => {
   };
 
   const prevTrack = () => {
+    saveCurrentTime();
     if (currentFileIndex > 0) {
       loadAudio(currentFileIndex - 1, selectedBookId || undefined);
       setIsPlaying(true);
@@ -483,6 +534,7 @@ const AudioPlayer: React.FC = () => {
   };
 
   const nextTrack = () => {
+    saveCurrentTime();
     const currentFiles =
       selectedBookId && selectedBookId !== "no-selection"
         ? books.find((b) => b.id === selectedBookId)?.audioFiles || []
@@ -520,6 +572,8 @@ const AudioPlayer: React.FC = () => {
     setBooks((prev) => [...prev, book]);
     setSelectedBookId(book.id);
 
+    await window.electronAPI.saveBook(book);
+
     // Save to IndexedDB
     await databaseService.saveBook(book);
   };
@@ -535,12 +589,13 @@ const AudioPlayer: React.FC = () => {
   const getCurrentFileName = () => {
     if (selectedBookId) {
       const book = books.find((b) => b.id === selectedBookId);
+
       if (
         book &&
         currentFileIndex >= 0 &&
-        currentFileIndex < book.audioFiles.length
+        currentFileIndex < book?.audioFiles?.length
       ) {
-        return book.audioFiles[currentFileIndex].name;
+        return book.audioFiles?.[currentFileIndex]?.name;
       }
     } else if (currentFileIndex >= 0 && currentFileIndex < audioFiles.length) {
       return audioFiles[currentFileIndex].name;
@@ -562,6 +617,7 @@ const AudioPlayer: React.FC = () => {
         <BookAudio className="mr-2 h-8 w-8 text-audiobook-purple" />
         Audiobook Player
       </h1>
+
       <p className="text-center text-audiobook-grayText mb-6">
         Upload and listen to your favorite audiobooks
       </p>
@@ -606,25 +662,6 @@ const AudioPlayer: React.FC = () => {
                   <BookCollection
                     books={books}
                     onBookSelect={handleBookSelect}
-                    onAddAudioToBook={(bookId, audioFile) => {
-                      setBooks((prev) => {
-                        const updatedBooks = prev.map((book) => {
-                          if (book.id === bookId) {
-                            const updatedBook = {
-                              ...book,
-                              audioFiles: [...book.audioFiles, audioFile],
-                            };
-                            // Save to IndexedDB
-                            databaseService.saveBook(updatedBook, [
-                              { id: audioFile.id, file: audioFile.file },
-                            ]);
-                            return updatedBook;
-                          }
-                          return book;
-                        });
-                        return updatedBooks;
-                      });
-                    }}
                     onCreateBook={handleCreateBook}
                     selectedBookId={selectedBookId}
                   />
@@ -654,7 +691,7 @@ const AudioPlayer: React.FC = () => {
                         {currentBookFiles.map((file, index) => (
                           <PlaylistItem
                             key={`${file.id}`}
-                            file={file.file}
+                            file={file}
                             isActive={
                               index === currentFileIndex &&
                               (currentBook

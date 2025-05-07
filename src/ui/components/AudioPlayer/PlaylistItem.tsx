@@ -1,9 +1,10 @@
 import React from "react";
 import { Play, Pause, Music } from "lucide-react";
 import { Button } from "@/ui/components/ui/button";
+import { AudioFile } from "@/ui/types/book";
 
 interface PlaylistItemProps {
-  file: File;
+  file: AudioFile;
   isActive: boolean;
   isPlaying: boolean;
   onClick: () => void;
@@ -43,9 +44,6 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
             {file.name.length > 25
               ? file.name.substring(0, 25) + "..."
               : file.name}
-          </span>
-          <span className="text-xs text-gray-500">
-            {(file.size / (1024 * 1024)).toFixed(2)} MB
           </span>
         </div>
       </div>

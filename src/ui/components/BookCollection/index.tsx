@@ -16,7 +16,6 @@ import { v4 as uuidv4 } from "uuid";
 interface BookCollectionProps {
   books: Book[];
   onBookSelect: (book: Book) => void;
-  onAddAudioToBook: (bookId: string, audioFile: AudioFile) => void;
   onCreateBook: (book: Book) => void;
   selectedBookId: string | null;
 }
@@ -24,7 +23,6 @@ interface BookCollectionProps {
 const BookCollection: React.FC<BookCollectionProps> = ({
   books,
   onBookSelect,
-  onAddAudioToBook,
   onCreateBook,
   selectedBookId,
 }) => {

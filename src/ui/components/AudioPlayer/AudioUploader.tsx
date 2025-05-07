@@ -12,7 +12,10 @@ import {
 } from "@/ui/components/ui/select";
 
 interface AudioUploaderProps {
-  onFileUpload: (files: File[], bookId?: string) => void;
+  onFileUpload: (
+    files: { path: string; name: string }[],
+    bookId?: string
+  ) => void;
   books: Book[];
   selectedBookId: string | null;
   onSelectBook: (bookId: string) => void;
@@ -37,27 +40,27 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
+  // const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  //   e.preventDefault();
+  //   setIsDragging(false);
 
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      processFiles(files);
-    }
-  };
+  //   const files = Array.from(e.dataTransfer.files);
+  //   if (files.length > 0) {
+  //     processFiles(files);
+  //   }
+  // };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      processFiles(Array.from(files));
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = e.target.files;
+  //   if (files && files.length > 0) {
+  //     processFiles(Array.from(files));
+  //   }
+  // };
 
-  const processFiles = (files: File[]) => {
-    const audioFiles = files.filter((file) => file.type.startsWith("audio/"));
+  const processFiles = (files: { path: string; name: string }[]) => {
+    // const audioFiles = files.filter((file) => file.type.startsWith("audio/"));
 
-    if (audioFiles.length === 0) {
+    if (files.length === 0) {
       toast({
         title: "Invalid files",
         description: "Please upload audio files (MP3, WAV, etc.)",
@@ -66,21 +69,21 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
       return;
     }
 
-    if (audioFiles.length < files.length) {
-      toast({
-        title: "Some files ignored",
-        description: `${
-          files.length - audioFiles.length
-        } non-audio files were ignored`,
-        variant: "default",
-      });
-    }
+    // if (audioFiles.length < files.length) {
+    //   toast({
+    //     title: "Some files ignored",
+    //     description: `${
+    //       files.length - audioFiles.length
+    //     } non-audio files were ignored`,
+    //     variant: "default",
+    //   });
+    // }
 
-    onFileUpload(audioFiles, selectedBookId || undefined);
+    onFileUpload(files, selectedBookId || undefined);
     toast({
       title: "Files uploaded",
-      description: `${audioFiles.length} audio ${
-        audioFiles.length === 1 ? "file" : "files"
+      description: `${files.length} audio ${
+        files.length === 1 ? "file" : "files"
       } ready to play`,
       variant: "default",
     });
@@ -93,6 +96,12 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
+  };
+
+  const uploadAudios = async () => {
+    const files = await window.electronAPI.selectAudio();
+    console.log(files);
+    processFiles(files);
   };
 
   return (
@@ -127,7 +136,7 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        // onDrop={handleDrop}
       >
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="bg-audiobook-lightPurple/30 p-4 rounded-full">
@@ -143,20 +152,21 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
             </p>
           </div>
           <Button
-            onClick={triggerFileInput}
+            // onClick={triggerFileInput}
+            onClick={() => uploadAudios()}
             className="bg-audiobook-purple hover:bg-audiobook-darkPurple"
           >
             <Upload className="h-4 w-4 mr-2" />
             Choose Files
           </Button>
-          <input
+          {/* <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
             accept="audio/*"
             multiple
             className="hidden"
-          />
+          /> */}
         </div>
       </div>
     </div>

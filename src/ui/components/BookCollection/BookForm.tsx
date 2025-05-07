@@ -21,26 +21,24 @@ const BookForm: React.FC<BookFormProps> = ({
   const [coverPreview, setCoverPreview] = useState<string | null>(
     initialBook?.cover || null
   );
-  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const handleCoverChange = async () => {
+    const imagePath = await window.electronAPI.selectFile();
 
-    const file = files[0];
-    if (!file.type.startsWith("image/")) {
-      toast({
-        title: "Invalid file",
-        description: "Please upload an image file for the cover",
-        variant: "destructive",
-      });
-      return;
-    }
+    // if (!file.type.startsWith("image/")) {
+    //   toast({
+    //     title: "Invalid file",
+    //     description: "Please upload an image file for the cover",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
 
-    setCoverFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    setCoverPreview(previewUrl);
+    setCoverFile(imagePath.path);
+
+    setCoverPreview(imagePath.path);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -58,7 +56,7 @@ const BookForm: React.FC<BookFormProps> = ({
     onSave({
       title,
       cover: coverFile,
-      coverFile: coverFile,
+      // coverFile: coverFile,
     });
   };
 
@@ -81,7 +79,7 @@ const BookForm: React.FC<BookFormProps> = ({
             {coverPreview ? (
               <div className="relative w-full h-full">
                 <img
-                  src={coverPreview}
+                  src={`file://${coverPreview}`}
                   alt="Book cover"
                   className="w-full h-full object-cover"
                 />
@@ -103,17 +101,17 @@ const BookForm: React.FC<BookFormProps> = ({
           </div>
 
           <div>
-            <Input
+            {/* <Input
               id="cover"
               type="file"
               accept="image/*"
               className="hidden"
               onChange={handleCoverChange}
-            />
+            /> */}
             <Button
               type="button"
               variant="outline"
-              onClick={() => document.getElementById("cover")?.click()}
+              onClick={() => handleCoverChange()}
             >
               <Upload className="h-4 w-4 mr-2" />
               Upload Cover

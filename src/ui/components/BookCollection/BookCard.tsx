@@ -21,11 +21,9 @@ const BookCard: React.FC<BookCardProps> = ({ book, isSelected, onClick }) => {
     >
       <div className="aspect-square relative">
         {book.cover ? (
-          <div
+          <img
+            src={`file://${book.cover}`}
             className="w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${URL.createObjectURL(book.cover)})`,
-            }}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-audiobook-purple to-audiobook-teal/40 flex items-center justify-center">

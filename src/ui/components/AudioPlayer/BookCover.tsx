@@ -4,7 +4,7 @@ import { BookAudio, Music3 } from "lucide-react";
 interface BookCoverProps {
   fileName: string;
   isPlaying: boolean;
-  coverUrl: Blob | MediaSource | null;
+  coverUrl: string | null;
   title: string | null;
 }
 
@@ -23,7 +23,7 @@ const BookCover: React.FC<BookCoverProps> = ({
       {coverUrl ? (
         <>
           <img
-            src={URL.createObjectURL(coverUrl)}
+            src={`file://${coverUrl}`}
             alt={title || fileName}
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -48,8 +48,8 @@ const BookCover: React.FC<BookCoverProps> = ({
           )}
 
           <h4 className="font-bold text-lg text-white break-words max-w-full">
-            {fileName.length > 20
-              ? fileName.substring(0, 20) + "..."
+            {fileName?.length > 20
+              ? fileName?.substring(0, 20) + "..."
               : fileName}
           </h4>
 

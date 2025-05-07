@@ -1,15 +1,14 @@
 export interface AudioFile {
   id: string;
-  file: File;
+  path: string;
   name: string;
-  size: number;
-  currentTime?: number; // Add current time for playback position
+  currentTime?: number;
 }
 
 export interface Book {
   id: string;
   title: string;
-  cover?: Blob | MediaSource | null; // URL for the cover image
+  cover?: string | null; // URL for the cover image
   coverFile?: File | null; // Adding this to handle file uploads
   audioFiles: AudioFile[];
   currentFileIndex: number;
