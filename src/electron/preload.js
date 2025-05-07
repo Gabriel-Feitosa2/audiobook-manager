@@ -11,6 +11,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   saveBook: (book, filePaths) =>
     ipcRenderer.invoke("db:saveBook", book, filePaths),
+
+  deleteBook: (bookId) => ipcRenderer.invoke("db:deleteBook", bookId),
+
   saveLooseAudio: (audio) => ipcRenderer.invoke("db:saveLooseAudio", audio),
 
   updateAudioCurrentTime: (id, currentTime, isLoose) =>

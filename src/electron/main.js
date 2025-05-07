@@ -74,6 +74,11 @@ ipcMain.handle("db:getLooseAudioPath", (event, id) =>
 ipcMain.handle("db:saveBook", (event, book, paths) =>
   databaseService.saveBook(book, paths)
 );
+
+ipcMain.handle("db:deleteBook", (event, bookId) =>
+  databaseService.deleteBook(bookId)
+);
+
 ipcMain.handle("db:saveLooseAudio", (event, audio) =>
   databaseService.saveLooseAudio(audio)
 );

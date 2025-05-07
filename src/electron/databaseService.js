@@ -69,6 +69,24 @@ class AudiobookService {
     }
   }
 
+  async deleteBook(bookId) {
+    // Exclui primeiro os arquivos de áudio associados ao livro
+    await this.db.run(`DELETE FROM audio_files WHERE book_id = ?`, bookId);
+
+    // Em seguida, exclui o próprio livro
+    await this.db.run(`DELETE FROM books WHERE id = ?`, bookId);
+
+    // Se o livro deletado estiver nas configurações, reseta as configurações
+    const currentSettings = await this.getSettings();
+    if (currentSettings?.selectedBookId === bookId) {
+      await this.saveSettings({
+        selectedBookId: null,
+        currentFileIndex: 0,
+        currentPlaybackTime: 0,
+      });
+    }
+  }
+
   async getAllBooks() {
     const books = await this.db.all(`SELECT * FROM books`);
     for (const book of books) {

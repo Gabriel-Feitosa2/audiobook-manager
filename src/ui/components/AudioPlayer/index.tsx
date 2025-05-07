@@ -25,41 +25,6 @@ import {
   SelectValue,
 } from "../ui/select";
 
-declare global {
-  interface Window {
-    electronAPI: {
-      selectFile: () => Promise<{ path: string; content: string } | null>;
-      selectAudio: () => Promise<{ path: string; name: string }[] | null>;
-      getAllBooks: () => Promise<Book[]>;
-      saveBook: (
-        book: Book,
-        filePaths?: { path: string; name: string }[]
-      ) => Promise<void>;
-      getAudioFilePath: (
-        id: string
-      ) => Promise<{ filePath: string; name: string } | null>;
-      getAllLooseAudios: () => Promise<AudioFile[]>;
-
-      updateAudioCurrentTime: (
-        id: string,
-        currentTime: number,
-        isLoose: boolean
-      ) => Promise<void>;
-
-      getSettings: () => Promise<{
-        selectedBookId: string | null;
-        currentFileIndex: number;
-        currentPlaybackTime: number;
-      } | null>;
-      saveSettings: (settings: {
-        selectedBookId: string;
-        currentFileIndex: number;
-        currentPlaybackTime: number;
-      }) => Promise<void>;
-    };
-  }
-}
-
 const AudioPlayer: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -83,8 +48,6 @@ const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioUrlRef = useRef<string | null>(null);
   const { toast } = useToast();
-
-  console.log(selectFileId);
 
   // Load data from IndexedDB when component mounts
   useEffect(() => {
@@ -601,6 +564,12 @@ const AudioPlayer: React.FC = () => {
     await databaseService.saveBook(book);
   };
 
+  const handleDeleteBook = async (bookId: string) => {
+    setBooks((prev) => prev.filter((book) => book.id !== bookId));
+
+    await window.electronAPI.deleteBook(bookId);
+  };
+
   const onSelectBook = (bookId: string) => {
     if (bookId === "no-selection") {
       setSelectedBookId(null);
@@ -633,8 +602,6 @@ const AudioPlayer: React.FC = () => {
       : audioFiles;
   const hasNextTrack = currentFileIndex < currentFiles.length - 1;
   const hasPrevTrack = currentFileIndex > 0;
-
-  console.log(currentBookFiles);
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
@@ -689,6 +656,7 @@ const AudioPlayer: React.FC = () => {
                     onBookSelect={handleBookSelect}
                     onCreateBook={handleCreateBook}
                     selectedBookId={selectedBookId}
+                    onDeleteBook={handleDeleteBook}
                   />
                 </TabsContent>
 

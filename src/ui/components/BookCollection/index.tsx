@@ -17,6 +17,7 @@ interface BookCollectionProps {
   books: Book[];
   onBookSelect: (book: Book) => void;
   onCreateBook: (book: Book) => void;
+  onDeleteBook: (bookId: string) => void;
   selectedBookId: string | null;
 }
 
@@ -24,6 +25,7 @@ const BookCollection: React.FC<BookCollectionProps> = ({
   books,
   onBookSelect,
   onCreateBook,
+  onDeleteBook,
   selectedBookId,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -84,6 +86,7 @@ const BookCollection: React.FC<BookCollectionProps> = ({
               book={book}
               isSelected={book.id === selectedBookId}
               onClick={() => onBookSelect(book)}
+              onDelete={() => onDeleteBook(book.id)}
             />
           ))}
         </div>

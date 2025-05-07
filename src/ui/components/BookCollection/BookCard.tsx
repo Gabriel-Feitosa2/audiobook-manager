@@ -1,16 +1,28 @@
 import React from "react";
 import { Book } from "@/ui/types/book";
-import { BookAudio, Disc3 } from "lucide-react";
+import { BookAudio, Disc3, EllipsisVertical } from "lucide-react";
 import { Card, CardContent } from "@/ui/components/ui/card";
 import { cn } from "@/ui/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface BookCardProps {
   book: Book;
   isSelected: boolean;
   onClick: () => void;
+  onDelete: () => void;
 }
 
-const BookCard: React.FC<BookCardProps> = ({ book, isSelected, onClick }) => {
+const BookCard: React.FC<BookCardProps> = ({
+  book,
+  isSelected,
+  onClick,
+  onDelete,
+}) => {
   return (
     <Card
       className={cn(
@@ -31,13 +43,31 @@ const BookCard: React.FC<BookCardProps> = ({ book, isSelected, onClick }) => {
           </div>
         )}
       </div>
-      <CardContent className="p-3">
-        <h3 className="font-medium text-sm line-clamp-1">{book.title}</h3>
-        <div className="flex items-center mt-1 text-xs text-audiobook-grayText">
-          <Disc3 className="h-3 w-3 mr-1" />
-          {book.audioFiles.length}{" "}
-          {book.audioFiles.length === 1 ? "file" : "files"}
+      <CardContent className="p-3 flex justify-between">
+        <div>
+          <h3 className="font-medium text-sm line-clamp-1">{book.title}</h3>
+          <div className="flex items-center mt-1 text-xs text-audiobook-grayText">
+            <Disc3 className="h-3 w-3 mr-1" />
+            {book.audioFiles.length}{" "}
+            {book.audioFiles.length === 1 ? "file" : "files"}
+          </div>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <EllipsisVertical className="h-3 w-3 " />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardContent>
     </Card>
   );
