@@ -367,6 +367,36 @@ export function useAudiobooks() {
     }
   };
 
+  const selectAudio = (index: number) => {
+    if (index === currentFileIndex) {
+      togglePlay();
+      return;
+    }
+
+    loadAudio(index, selectedBookId || undefined);
+    setIsPlaying(true);
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
+  };
+
+  const getCurrentFileName = () => {
+    if (selectedBookId) {
+      const book = books.find((b) => b.id === selectedBookId);
+
+      if (
+        book &&
+        currentFileIndex >= 0 &&
+        currentFileIndex < book?.audioFiles?.length
+      ) {
+        return book.audioFiles?.[currentFileIndex]?.name;
+      }
+    } else if (currentFileIndex >= 0 && currentFileIndex < audioFiles.length) {
+      return audioFiles[currentFileIndex].name;
+    }
+    return "";
+  };
+
   return {
     handleCreateBook,
     handleDeleteBook,
@@ -380,6 +410,8 @@ export function useAudiobooks() {
     onSelectBook,
     handleEnded,
     skip,
+    selectAudio,
+    getCurrentFileName,
     audioRef,
     audioUrlRef,
   };
