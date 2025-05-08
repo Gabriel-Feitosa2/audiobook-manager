@@ -214,7 +214,7 @@ const AudioPlayer: React.FC = () => {
   return (
     <>
       <div className="container max-w-4xl mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-2 text-center flex items-center justify-center">
+        <h1 className="text-3xl font-bold mb-2 text-center text-white flex items-center justify-center">
           <BookAudio className="mr-2 h-8 w-8 text-audiobook-purple" />
           Audiobook Player
         </h1>
@@ -223,29 +223,24 @@ const AudioPlayer: React.FC = () => {
           Upload and listen to your favorite audiobooks
         </p>
 
-        <Card className="overflow-hidden shadow-md">
+        <Card className="overflow-hidden shadow-md bg-neutral-800 border-none">
           <Tabs
             defaultValue="library"
             value={activeTab}
             onValueChange={setActiveTab}
           >
-            <div className="bg-gray-50 p-2">
-              <TabsList className="grid grid-cols-3">
+            <div className="p-2">
+              <TabsList className="grid grid-cols-3 bg-neutral-800 ">
                 <TabsTrigger
                   value="library"
-                  className="data-[state=active]:bg-white"
+                  className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
                 >
                   Library
                 </TabsTrigger>
-                <TabsTrigger
-                  value="player"
-                  className="data-[state=active]:bg-white"
-                >
-                  Player
-                </TabsTrigger>
+
                 <TabsTrigger
                   value="upload"
-                  className="data-[state=active]:bg-white"
+                  className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
                 >
                   Upload
                 </TabsTrigger>
@@ -278,14 +273,14 @@ const AudioPlayer: React.FC = () => {
                       <div className="mt-6">
                         <div className="flex items-center mb-3">
                           <List className="mr-2 h-5 w-5 text-audiobook-purple" />
-                          <h3 className="font-semibold">
+                          <h3 className="font-semibold text-white">
                             {currentBook
                               ? `${currentBook.title} (${currentBook.audioFiles.length} files)`
                               : `Your Playlist (${audioFiles.length})`}
                           </h3>
                         </div>
 
-                        <div className="border rounded-md overflow-hidden max-h-80 overflow-y-auto">
+                        <div className="rounded-md overflow-hidden max-h-40 overflow-y-auto [&::-webkit-scrollbar]:bg-neutral-800 [&::-webkit-scrollbar-thumb]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-md">
                           {currentBookFiles.map((file, index) => (
                             <PlaylistItem
                               key={`${file.id}`}

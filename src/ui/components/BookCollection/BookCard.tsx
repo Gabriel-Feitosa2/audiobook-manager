@@ -26,7 +26,7 @@ const BookCard: React.FC<BookCardProps> = ({
   return (
     <Card
       className={cn(
-        "cursor-pointer transition-all hover:shadow-lg overflow-hidden",
+        "cursor-pointer transition-all hover:shadow-lg overflow-hidden border-none",
         isSelected ? "ring-2 ring-audiobook-purple" : ""
       )}
       onClick={onClick}
@@ -43,9 +43,11 @@ const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
       </div>
-      <CardContent className="p-3 flex justify-between">
+      <CardContent className="p-3 flex justify-between bg-neutral-900">
         <div>
-          <h3 className="font-medium text-sm line-clamp-1">{book.title}</h3>
+          <h3 className="font-medium text-sm line-clamp-1 text-white">
+            {book.title}
+          </h3>
           <div className="flex items-center mt-1 text-xs text-audiobook-grayText">
             <Disc3 className="h-3 w-3 mr-1" />
             {book.audioFiles.length}{" "}
@@ -54,7 +56,7 @@ const BookCard: React.FC<BookCardProps> = ({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <EllipsisVertical className="h-3 w-3 " />
+            <EllipsisVertical className="h-3 w-3 text-white" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem

@@ -27,15 +27,6 @@ const BookForm: React.FC<BookFormProps> = ({
   const handleCoverChange = async () => {
     const imagePath = await window.electronAPI.selectFile();
 
-    // if (!file.type.startsWith("image/")) {
-    //   toast({
-    //     title: "Invalid file",
-    //     description: "Please upload an image file for the cover",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
     setCoverFile(imagePath.path);
 
     setCoverPreview(imagePath.path);
@@ -56,7 +47,6 @@ const BookForm: React.FC<BookFormProps> = ({
     onSave({
       title,
       cover: coverFile,
-      // coverFile: coverFile,
     });
   };
 
@@ -75,7 +65,7 @@ const BookForm: React.FC<BookFormProps> = ({
       <div className="space-y-2">
         <Label htmlFor="cover">Cover Image</Label>
         <div className="flex items-center space-x-4">
-          <div className="w-24 h-24 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50">
+          <div className="w-24 h-24 border rounded-md overflow-hidden flex items-center justify-center bg-neutral-900 border-neutral-950 ">
             {coverPreview ? (
               <div className="relative w-full h-full">
                 <img
@@ -101,13 +91,6 @@ const BookForm: React.FC<BookFormProps> = ({
           </div>
 
           <div>
-            {/* <Input
-              id="cover"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleCoverChange}
-            /> */}
             <Button
               type="button"
               variant="outline"

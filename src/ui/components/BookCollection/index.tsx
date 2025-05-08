@@ -50,7 +50,7 @@ const BookCollection: React.FC<BookCollectionProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold flex items-center">
+        <h2 className="text-lg font-semibold flex text-white items-center">
           <BookAudio className="mr-2 h-5 w-5 text-audiobook-purple" />
           Your Audiobooks
         </h2>
@@ -91,7 +91,7 @@ const BookCollection: React.FC<BookCollectionProps> = ({
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-neutral-800 text-white">
           <DialogHeader>
             <DialogTitle>Create New Audiobook</DialogTitle>
           </DialogHeader>

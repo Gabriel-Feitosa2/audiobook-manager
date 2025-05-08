@@ -18,10 +18,10 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 }) => {
   return (
     <div
-      className={`flex items-center justify-between p-3 rounded-md transition-colors ${
+      className={`flex items-center justify-between p-3 rounded-md transition-colors text-white ${
         isActive
           ? "bg-audiobook-lightPurple/20 border-l-4 border-audiobook-purple"
-          : "hover:bg-gray-100 border-l-4 border-transparent"
+          : "hover:bg-neutral-500 border-l-4 border-transparent"
       }`}
       onClick={onClick}
     >
@@ -36,11 +36,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
           <Music className="h-4 w-4" />
         </div>
         <div className="flex flex-col">
-          <span
-            className={`font-medium ${
-              isActive ? "text-audiobook-darkText" : "text-gray-700"
-            }`}
-          >
+          <span className={`font-medium text-white`}>
             {file.name.length > 25
               ? file.name.substring(0, 25) + "..."
               : file.name}

@@ -74,7 +74,7 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
     <div className="space-y-4">
       {books.length > 0 && (
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium">Add to book:</label>
+          <label className="text-sm font-medium text-white">Add to book:</label>
           <Select
             value={selectedBookId || "no-selection"}
             onValueChange={(value) => onSelectBook(value)}
@@ -109,7 +109,7 @@ const AudioUploader: React.FC<AudioUploaderProps> = ({
             <FileAudio className="h-10 w-10 text-audiobook-purple" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold">Upload Audio</h3>
+            <h3 className="text-lg text-white font-semibold">Upload Audio</h3>
             <p className="text-sm text-audiobook-grayText mt-1">
               Drag and drop multiple audio files or click to upload
               {selectedBookId && selectedBookId !== "no-selection"

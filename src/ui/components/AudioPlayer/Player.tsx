@@ -127,7 +127,7 @@ function Player({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 w-full bg-neutral-900 text-white shadow-lg p-4 flex flex-col items-center gap-4">
+    <div className="fixed bottom-0 left-0 right-0 w-full bg-neutral-800 text-white shadow-lg p-4 flex flex-col items-center gap-4">
       <div className="flex justify-between items-center w-full">
         <div className="flex gap-4">
           <BookCover
@@ -156,7 +156,7 @@ function Player({
           />
           <button
             onClick={togglePlay}
-            className="bg-green-500 hover:bg-green-600 text-black p-2 rounded-full"
+            className="bg-cerise-800 hover:bg-cerise-900 text-black p-2 rounded-full"
           >
             {isPlaying ? <Pause size={20} /> : <Play size={20} />}
           </button>
@@ -200,10 +200,11 @@ function Player({
         />
         <span>{formatTime(duration)}</span>
       </div>
+
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="h-[32rem] overflow-auto">
+        <DialogContent className="h-[32rem] overflow-auto bg-neutral-800  [&::-webkit-scrollbar]:bg-neutral-800 [&::-webkit-scrollbar-thumb]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-md">
           <DialogHeader>
-            <DialogTitle>Tracks</DialogTitle>
+            <DialogTitle className="text-white">Tracks</DialogTitle>
           </DialogHeader>
           {currentBookFiles.map((file, index) => (
             <PlaylistItem
