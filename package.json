@@ -1,16 +1,19 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "audiobook-manager",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
-  "main": "src/electron/main.js",
+  "main": "dist/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron": "electron ."
+    "electron": "electron .",
+    "copy:main": "cpx \"src/electron/*.{js,json}\" dist/",
+    "electron:build": "npm run build && npm run copy:main && electron-builder --x64",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -63,7 +66,6 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "tailwind-merge": "^2.5.2",
-    "tailwind-scrollbar": "^4.0.2",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "vaul": "^0.9.3",
@@ -77,7 +79,10 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
+    "cpx": "^1.5.0",
     "electron": "^36.1.0",
+    "electron-builder": "^26.0.12",
+    "electron-rebuild": "^3.2.9",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
@@ -87,5 +92,24 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
+  },
+  "build": {
+    "appId": "your.id",
+    "icon": "./audiobookIcon.png",
+    "files": [
+      "dist/**",
+      "dist-react/**",
+      "node_modules/**",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "dist/main.js"
+    },
+    "win": {
+      "target": [
+        "portable",
+        "msi"
+      ]
+    }
   }
 }
