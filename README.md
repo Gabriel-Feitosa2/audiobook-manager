@@ -1,16 +1,6 @@
----
-
-  
-
-````markdown
-
 # Audiobook Manager
 
-  
-
 **Audiobook Manager** é um aplicativo de desktop construído com **Electron**, **React**, **Vite** e **TailwindCSS** para gerenciar audiobooks localmente. Utiliza **SQLite** para armazenamento persistente, com uma interface moderna baseada em Radix UI.
-
-  
 
 ---
 
@@ -48,13 +38,7 @@ No modo desenvolvimento, é necessário **alterar o campo `main` no `package.jso
 
 ```
 
-````
-
-
-
 para:
-
-
 
 ```json
 
@@ -62,33 +46,19 @@ para:
 
 ```
 
-
-
 Isso é necessário para que o Electron use os arquivos fonte diretamente ao invés do build final.
-
-
 
 ---
 
-
-
 ### Pré-requisitos
-
-
 
 - Node.js v18 ou superior
 
 - NPM v9 ou superior
 
-
-
 ---
 
-
-
 ### 1. Instale as dependências
-
-
 
 ```bash
 
@@ -96,19 +66,11 @@ npm  install
 
 ```
 
-
-
 ---
-
-
 
 ### 2. Build inicial (necessário por causa do uso de SQLite)
 
-
-
 Antes de rodar o Electron, é necessário gerar o build do front-end:
-
-
 
 ```bash
 
@@ -116,15 +78,9 @@ npm  run  build
 
 ```
 
-
-
 ---
 
-
-
 ### 3. Rode a aplicação
-
-
 
 ```bash
 
@@ -132,19 +88,11 @@ npm  run  electron
 
 ```
 
-
-
-> 💡 O comando `npm run dev`  **não é suficiente** por si só devido à integração com SQLite. Sempre rode `npm run build` antes de iniciar o Electron.
-
-
+> 💡 O comando `npm run dev` **não é suficiente** por si só devido à integração com SQLite. Sempre rode `npm run build` antes de iniciar o Electron.
 
 ---
 
-
-
 ## 🛠️ Scripts Disponíveis
-
-
 
 | Script | Descrição |
 
@@ -168,19 +116,11 @@ npm  run  electron
 
 | `postinstall` | Instala dependências nativas do Electron |
 
-
-
 ---
-
-
 
 ## 🧪 Build para Produção (.exe)
 
-
-
 Para empacotar a aplicação como um executável (.exe) no Windows:
-
-
 
 ```bash
 
@@ -188,19 +128,11 @@ npm  run  electron:build
 
 ```
 
-
-
 O pacote gerado estará disponível na pasta `dist/`.
-
-
 
 ---
 
-
-
 ## 📁 Estrutura Esperada
-
-
 
 ```
 
@@ -224,27 +156,15 @@ O pacote gerado estará disponível na pasta `dist/`.
 
 ```
 
-
-
 ---
-
-
 
 ## 📦 Distribuição
 
-
-
 O Electron Builder está configurado para gerar builds para Windows (`portable` e `msi`). Outros alvos podem ser adicionados facilmente no campo `build` do `package.json`.
-
-
 
 ---
 
-
-
 ## 🧱 Roadmap
-
-
 
 - [x] Integração com IndexedDB via Dexie
 
@@ -256,32 +176,22 @@ O Electron Builder está configurado para gerar builds para Windows (`portable` 
 
 - [ ] Tema escuro/sistema
 
-
-
 ---
-
-
 
 ## 📄 Licença
 
-
-
 Este projeto é **privado** no momento. Entre em contato com o autor para mais informações.
-
-
 
 ---
 
-
-
 ## 👤 Autor
-
-
 
 Gabriel Feitosa
 
 [LinkedIn](https://www.linkedin.com/in/gabriel-feitosa-b02b70186)
 
+```
 
 
-````
+
+```
