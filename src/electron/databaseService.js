@@ -69,6 +69,18 @@ class AudiobookService {
     }
   }
 
+  async updateBook(book) {
+    await this.db.run(
+      `UPDATE books
+     SET title = ?, cover = ?, currentFileIndex = ?
+     WHERE id = ?`,
+      book.title,
+      book.cover || null,
+      book.currentFileIndex || 0,
+      book.id
+    );
+  }
+
   async deleteBook(bookId) {
     // Exclui primeiro os arquivos de áudio associados ao livro
     await this.db.run(`DELETE FROM audio_files WHERE book_id = ?`, bookId);

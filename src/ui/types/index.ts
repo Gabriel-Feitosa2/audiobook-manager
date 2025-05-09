@@ -10,6 +10,7 @@ declare global {
         book: Book,
         filePaths?: { path: string; name: string }[]
       ) => Promise<void>;
+      updateBook: (book: Book) => Promise<void>;
       deleteBook: (bookId: string) => Promise<void>;
       getAudioFilePath: (
         id: string

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Book } from "@/ui/types/book";
 import { BookAudio, Disc3, EllipsisVertical } from "lucide-react";
 import { Card, CardContent } from "@/ui/components/ui/card";
@@ -9,6 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import BookForm from "./BookForm";
+import { useToast } from "../ui/use-toast";
+import { useAudiobooks } from "@/ui/hooks/usebook";
+import { useAtomValue } from "jotai";
+import { booksAtom, selectedBookIdAtom } from "@/ui/atom/books";
 
 interface BookCardProps {
   book: Book;
@@ -23,6 +29,35 @@ const BookCard: React.FC<BookCardProps> = ({
   onClick,
   onDelete,
 }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { handleUpdateBook } = useAudiobooks();
+  const { toast } = useToast();
+
+  const books = useAtomValue(booksAtom);
+  const selectedBookId = useAtomValue(selectedBookIdAtom);
+
+  const EditBook = (bookData: Partial<Book>) => {
+    const editBook: Book = {
+      id: bookData.id,
+      title: bookData.title || "Untitled Audiobook",
+      cover: bookData.cover || null,
+      audioFiles: [],
+      currentFileIndex: 0,
+    };
+
+    handleUpdateBook(editBook);
+    setIsDialogOpen(false);
+
+    toast({
+      title: "Book Edit",
+      description: `"${editBook.title}" has been Edit`,
+    });
+  };
+
+  const currentBook = selectedBookId
+    ? books.find((book) => book.id === selectedBookId)
+    : null;
+
   return (
     <Card
       className={cn(
@@ -63,6 +98,15 @@ const BookCard: React.FC<BookCardProps> = ({
               className="cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
+                setIsDialogOpen(true);
+              }}
+            >
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
                 onDelete();
               }}
             >
@@ -71,6 +115,18 @@ const BookCard: React.FC<BookCardProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
       </CardContent>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-neutral-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Edit Audiobook</DialogTitle>
+          </DialogHeader>
+          <BookForm
+            onSave={EditBook}
+            onCancel={() => setIsDialogOpen(false)}
+            book={currentBook}
+          />
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

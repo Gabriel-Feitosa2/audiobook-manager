@@ -45,14 +45,12 @@ const AudioPlayer: React.FC = () => {
   const {
     loadAudio,
     saveCurrentTime,
-    changeTrack,
     togglePlay,
     prevTrack,
     nextTrack,
     handleEnded,
     skip,
     selectAudio,
-    getCurrentFileName,
     audioRef,
     audioUrlRef,
   } = useAudiobooks();

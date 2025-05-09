@@ -53,6 +53,20 @@ export function useAudiobooks() {
     [setBooks]
   );
 
+  const handleUpdateBook = async (book: Book) => {
+    try {
+      setBooks((prev) =>
+        prev.map((b) => (b.id === book.id ? { ...b, ...book } : b))
+      );
+
+      console.log("book", book);
+
+      await window.electronAPI.updateBook(book);
+    } catch (error) {
+      console.error("Erro ao buscar audiobooks:", error);
+    }
+  };
+
   const handleDeleteBook = useCallback(
     async (bookId: string) => {
       setBooks((prev) => prev.filter((book) => book.id !== bookId));
@@ -399,6 +413,7 @@ export function useAudiobooks() {
 
   return {
     handleCreateBook,
+    handleUpdateBook,
     handleDeleteBook,
     loadAudio,
     handleFileUpload,

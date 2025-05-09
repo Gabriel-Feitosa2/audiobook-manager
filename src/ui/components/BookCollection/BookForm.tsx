@@ -7,19 +7,15 @@ import { Upload, BookAudio, X } from "lucide-react";
 import { useToast } from "@/ui/hooks/use-toast";
 
 interface BookFormProps {
-  initialBook?: Partial<Book>;
+  book?: Partial<Book>;
   onSave: (book: Partial<Book>) => void;
   onCancel: () => void;
 }
 
-const BookForm: React.FC<BookFormProps> = ({
-  initialBook,
-  onSave,
-  onCancel,
-}) => {
-  const [title, setTitle] = useState(initialBook?.title || "");
+const BookForm: React.FC<BookFormProps> = ({ book, onSave, onCancel }) => {
+  const [title, setTitle] = useState(book?.title || "");
   const [coverPreview, setCoverPreview] = useState<string | null>(
-    initialBook?.cover || null
+    book?.cover || null
   );
   const [coverFile, setCoverFile] = useState<string | null>(null);
   const { toast } = useToast();
@@ -45,6 +41,7 @@ const BookForm: React.FC<BookFormProps> = ({
     }
 
     onSave({
+      id: book?.id || null,
       title,
       cover: coverFile,
     });

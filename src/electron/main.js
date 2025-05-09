@@ -75,6 +75,10 @@ ipcMain.handle("db:saveBook", (event, book, paths) =>
   databaseService.saveBook(book, paths)
 );
 
+ipcMain.handle("db:updateBook", (event, book) =>
+  databaseService.updateBook(book)
+);
+
 ipcMain.handle("db:deleteBook", (event, bookId) =>
   databaseService.deleteBook(bookId)
 );
