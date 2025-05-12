@@ -118,6 +118,19 @@ export default {
         "pulse-light": "pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
+    keyframes: {
+      "fade-out": {
+        "0%": {
+          opacity: "1",
+        },
+        "100%": {
+          opacity: "0",
+        },
+      },
+    },
+    animation: {
+      "fade-out": "fade-out 0.5s ease-in-out",
+    },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

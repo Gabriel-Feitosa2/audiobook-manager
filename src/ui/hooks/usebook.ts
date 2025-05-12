@@ -77,7 +77,6 @@ export function useAudiobooks() {
   );
 
   const loadAudio = async (index: number, bookId?: string) => {
-    console.log("teste");
     // Clean up previous object URL if any
     if (audioUrlRef.current) {
       URL.revokeObjectURL(audioUrlRef.current);
