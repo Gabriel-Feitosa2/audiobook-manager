@@ -1,197 +1,147 @@
 # Audiobook Manager
 
-**Audiobook Manager** é um aplicativo de desktop construído com **Electron**, **React**, **Vite** e **TailwindCSS** para gerenciar audiobooks localmente. Utiliza **SQLite** para armazenamento persistente, com uma interface moderna baseada em Radix UI.
+**Audiobook Manager** is a desktop application built with **Electron**, **React**, **Vite**, and **TailwindCSS** to manage audiobooks locally. It uses **SQLite** for persistent storage, with a modern interface based on Radix UI.
 
 ---
 
-## 🧰 Tecnologias Principais
+## 🧰 Main Technologies
 
-- [Electron](https://www.electronjs.org/) – empacotamento e execução desktop
-
-- [React 18](https://react.dev/) – construção da interface do usuário
-
-- [Vite](https://vitejs.dev/) – build e servidor de desenvolvimento rápidos
-
-- [Tailwind CSS](https://tailwindcss.com/) – estilos utilitários
-
-- [SQLite](https://www.sqlite.org/index.html) – banco de dados local
-
-- [Dexie.js](https://dexie.org/) – IndexedDB (em transição para SQLite)
-
-- [Zod](https://zod.dev/) – validação de esquemas
-
-- [Radix UI](https://www.radix-ui.com/) – componentes acessíveis e sem estilo
-
-- [Electron Builder](https://www.electron.build/) – empacotamento final da aplicação
+- [Electron](https://www.electronjs.org/) – desktop packaging and execution
+- [React 18](https://react.dev/) – building the user interface
+- [Vite](https://vitejs.dev/) – fast build and development server
+- [Tailwind CSS](https://tailwindcss.com/) – utility-first styling
+- [SQLite](https://www.sqlite.org/index.html) – local database
+- [Dexie.js](https://dexie.org/) – IndexedDB (transitioning to SQLite)
+- [Zod](https://zod.dev/) – schema validation
+- [Radix UI](https://www.radix-ui.com/) – unstyled and accessible UI components
+- [Electron Builder](https://www.electron.build/) – final application packaging
 
 ---
 
-## 🚀 Instalação e Execução
+## 🚀 Installation and Running
 
-### ⚠️ Importante durante o desenvolvimento:
+### ⚠️ Important during development:
 
-No modo desenvolvimento, é necessário **alterar o campo `main` no `package.json`** de:
+In development mode, you must **change the `main` field in `package.json`** from:
 
 ```json
-
 "main": "dist/main.js"
-
 ```
 
-para:
+to:
 
 ```json
-
 "main": "src/electron/main.js"
-
 ```
 
-Isso é necessário para que o Electron use os arquivos fonte diretamente ao invés do build final.
+This ensures Electron uses the source files directly instead of the final build.
 
 ---
 
-### Pré-requisitos
+### Prerequisites
 
-- Node.js v18 ou superior
-
-- NPM v9 ou superior
+- Node.js v18 or higher
+- NPM v9 or higher
 
 ---
 
-### 1. Instale as dependências
+### 1. Install dependencies
 
 ```bash
-
-npm  install
-
+npm install
 ```
 
 ---
 
-### 2. Build inicial (necessário por causa do uso de SQLite)
+### 2. Initial build (required due to SQLite usage)
 
-Antes de rodar o Electron, é necessário gerar o build do front-end:
+Before running Electron, generate the front-end build:
 
 ```bash
-
-npm  run  build
-
+npm run build
 ```
 
 ---
 
-### 3. Rode a aplicação
+### 3. Run the application
 
 ```bash
-
-npm  run  electron
-
+npm run electron
 ```
 
-> 💡 O comando `npm run dev` **não é suficiente** por si só devido à integração com SQLite. Sempre rode `npm run build` antes de iniciar o Electron.
+> 💡 The `npm run dev` command **is not sufficient** on its own due to SQLite integration. Always run `npm run build` before starting Electron.
 
 ---
 
-## 🛠️ Scripts Disponíveis
+## 🛠️ Available Scripts
 
-| Script | Descrição |
-
-| ---------------- | ----------------------------------------------------------------------------- |
-
-| `dev` | Inicia o Vite em modo desenvolvimento _(⚠️ não usar isoladamente com SQLite)_ |
-
-| `build` | Compila o front-end com Vite |
-
-| `build:dev` | Compila com modo development |
-
-| `lint` | Roda o ESLint |
-
-| `preview` | Serve o build para preview |
-
-| `electron` | Inicia o Electron com o código atual |
-
-| `copy:main` | Copia arquivos da pasta `src/electron` para `dist` |
-
-| `electron:build` | Build completo para produção (.exe) |
-
-| `postinstall` | Instala dependências nativas do Electron |
+| Script           | Description                                                         |
+| ---------------- | ------------------------------------------------------------------- |
+| `dev`            | Starts Vite in development mode _(⚠️ do not use alone with SQLite)_ |
+| `build`          | Builds the front-end with Vite                                      |
+| `build:dev`      | Builds in development mode                                          |
+| `lint`           | Runs ESLint                                                         |
+| `preview`        | Serves the built app for preview                                    |
+| `electron`       | Starts Electron with current code                                   |
+| `copy:main`      | Copies files from `src/electron` to `dist`                          |
+| `electron:build` | Full production build (.exe)                                        |
+| `postinstall`    | Installs native Electron dependencies                               |
 
 ---
 
-## 🧪 Build para Produção (.exe)
+## 🧪 Production Build (.exe)
 
-Para empacotar a aplicação como um executável (.exe) no Windows:
+To package the app as a Windows executable (.exe):
 
 ```bash
-
-npm  run  electron:build
-
+npm run electron:build
 ```
 
-O pacote gerado estará disponível na pasta `dist/`.
+The generated package will be available in the `dist/` folder.
 
 ---
 
-## 📁 Estrutura Esperada
+## 📁 Expected Structure
 
 ```
-
 /
-
 ├── src/
-
-│ ├── electron/ # scripts principais do Electron
-
-│ └── renderer/ # código React + UI
-
-├── dist/ # build do Electron
-
-├── dist-react/ # build do Vite (renderer)
-
-├── audiobookIcon.png # ícone do app
-
+│   ├── electron/       # main Electron scripts
+│   └── renderer/       # React + UI code
+├── dist/               # Electron build output
+├── dist-react/         # Vite build (renderer)
+├── audiobookIcon.png   # app icon
 ├── package.json
-
 └── README.md
-
 ```
 
 ---
 
-## 📦 Distribuição
+## 📦 Distribution
 
-O Electron Builder está configurado para gerar builds para Windows (`portable` e `msi`). Outros alvos podem ser adicionados facilmente no campo `build` do `package.json`.
+Electron Builder is configured to generate builds for Windows (`portable` and `msi`). Other targets can be easily added in the `build` field of `package.json`.
 
 ---
 
 ## 🧱 Roadmap
 
-- [x] Integração com IndexedDB via Dexie
-
-- [x] Suporte a SQLite local
-
-- [ ] Sincronização em nuvem (futuramente)
-
-- [ ] Suporte a capítulos e marcadores
-
-- [ ] Tema escuro/sistema
+- [x] Integration with IndexedDB via Dexie
+- [x] Local SQLite support
+- [ ] Cloud sync (future)
+- [ ] Support for chapters and bookmarks
+- [ ] Dark/system theme
 
 ---
 
-## 📄 Licença
+## 📄 License
 
-Este projeto é **privado** no momento. Entre em contato com o autor para mais informações.
+This project is currently **private**. Contact the author for more information.
 
 ---
 
-## 👤 Autor
+## 👤 Author
 
-Gabriel Feitosa
-
+Gabriel Feitosa  
 [LinkedIn](https://www.linkedin.com/in/gabriel-feitosa-b02b70186)
 
-```
-
-
-
-```
+---
